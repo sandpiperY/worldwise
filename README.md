@@ -56,7 +56,6 @@ provides an overview of the WorldWise project
 * **Styling & UI:**
 
   * **CSS / SCSS** – Styling components
-  * Optional: **TailwindCSS / Material UI** (if used in your project)
 
 
 
