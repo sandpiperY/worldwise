@@ -1,0 +1,33 @@
+{
+  "kind": "collectionType",
+  "collectionName": "cities",
+  "info": {
+    "singularName": "city",
+    "pluralName": "cities",
+    "displayName": "city"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "cityName": {
+      "type": "string"
+    },
+    "country": {
+      "type": "string"
+    },
+    "emoji": {
+      "type": "string"
+    },
+    "date": {
+      "type": "datetime"
+    },
+    "notes": {
+      "type": "text"
+    },
+    "position": {
+      "type": "json"
+    }
+  }
+}
