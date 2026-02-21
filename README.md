@@ -18,7 +18,7 @@
 
 ### Home Page
 
-The main landing page displaying featured destinations and search functionality.
+The Home Page serves as the entry point of the app, providing user login and navigation to other pages.
 <img width="1920" height="989" alt="屏幕截图 2026-02-21 213114" src="https://github.com/user-attachments/assets/f3bcfb62-8034-422b-9d6f-c4e15e7c4c41" />
 
 ### Map Page
