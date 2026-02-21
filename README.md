@@ -1,6 +1,6 @@
 ## WorldWise
 
-**WorldWise** is an interactive travel destinations web app originally inspired by *The Ultimate React Course* from Udemy. This project expands on the original by integrating real-world APIs and modern state-management tools to enhance functionality and developer experience.
+**WorldWise** is an interactive travel destinations web app originally inspired by *The Ultimate React Course 2025* from Udemy. This project expands on the original by integrating real-world APIs and modern state-management tools to enhance functionality and developer experience.
 
 ### 🚀 What’s Improved
 
