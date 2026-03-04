@@ -1,15 +1,17 @@
 import { BrowserRouter as Router, Routes, Route, Navigate} from 'react-router-dom'
+import React, { Suspense } from 'react'
 
-import HomePage from './Pages/HomePage'
-import Product from './Pages/Product'
-import Pricing from './Pages/Pricing'
-import PageNotFound from './Pages/PageNotFound'
-import AppLayout from './Pages/AppLayout'
-import Login from './Pages/Login'
-import CityList from './components/Sidebar/CityList/CityList'
-import CountryList from './components/Sidebar/CountryList/CountryList'
-import City from './components/Sidebar/CityList/City/City.jsx'
-import Form from './components/Form/Form.jsx'
+const HomePage = React.lazy(() => import('./Pages/HomePage'))
+const Product = React.lazy(() => import('./Pages/Product'))
+const Pricing = React.lazy(() => import('./Pages/Pricing'))
+const PageNotFound = React.lazy(() => import('./Pages/PageNotFound'))
+const AppLayout = React.lazy(() => import('./Pages/AppLayout'))
+const Login = React.lazy(() => import('./Pages/Login'))
+const CityList = React.lazy(() => import('./components/Sidebar/CityList/CityList'))
+const CountryList = React.lazy(() => import('./components/Sidebar/CountryList/CountryList'))
+const City = React.lazy(() => import('./components/Sidebar/CityList/City/City.jsx'))
+const Form = React.lazy(() => import('./components/Form/Form.jsx'))
+import Spinner from './components/Spinner/Spinner'
 import {CityProvider} from './store/CityContext'
 import { useDispatch } from 'react-redux';
 import { logout } from './store/authSlice';
@@ -35,6 +37,7 @@ function App() {
   return (
     <CityProvider>
       <Router>
+        <Suspense fallback={<Spinner />}>
         <Routes>
           <Route path='/' element={<HomePage />} />
           <Route path='product' element={<Product />} />
@@ -49,6 +52,7 @@ function App() {
           </Route>
           <Route path='*' element={<PageNotFound />} />
         </Routes>
+        </Suspense>
       </Router>
     </CityProvider>
   )
