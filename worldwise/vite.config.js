@@ -6,17 +6,17 @@ import viteImagemin from 'vite-plugin-imagemin'
 export default defineConfig({
   plugins: [
     react(),
-     viteImagemin({
+    viteImagemin({
       webp: {
-        quality: 70   // 类似“压缩 30%”
+        quality: 70,
       },
       mozjpeg: {
-        quality: 70
+        quality: 70,
       },
       pngquant: {
-        quality: [0.6, 0.7]
-      }
-    })
+        quality: [0.6, 0.7],
+      },
+    }),
   ],
   build: {
     sourcemap: false,
