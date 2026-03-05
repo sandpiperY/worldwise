@@ -22,18 +22,6 @@ function City() {
         getCity(id);
     },[id]);
 
-    // const [searchParams, setSearchParams] = useSearchParams();
-    // const lat = searchParams.get("lat");
-    // const lng = searchParams.get("lng");
-
-
-    // const currentCity = {
-    //     cityName: "Lisbon",
-    //     emoji: "PT",
-    //     date: "2027-10-31T15:59:59.138Z",
-    //     notes: "My favorite city so far!",
-    // };
-
     const {cityName, emoji, date, notes} = currentCity;
 
     if(isLoading) return <Spinner/>;

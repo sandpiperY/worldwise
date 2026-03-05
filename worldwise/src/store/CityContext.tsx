@@ -1,28 +1,43 @@
-import { createContext, useEffect, useContext, useReducer } from "react";
+import React,{ createContext, useEffect, useContext, useReducer } from "react";
+import { request } from "../config/request";
 
 const BASE_URL = 'http://localhost:1337/api';
-const CityContext = createContext();
+
+interface CityContextType {
+  cities: any[];
+  currentCity: any;
+  isLoading: boolean;
+  error: string | null;
+  getCity: (documentId: string) => Promise<void>;
+  createCity: (city: any) => Promise<void>;
+  deleteCity: (documentId: string) => Promise<void>;
+}
 
 const initialState = {
   isLoading: false,
   cities: [],
   currentCity: {},
-  error: null
+  error: null,
+  getCity: async (documentId: string) => {},
+  createCity: async (city: any) => {},
+  deleteCity: async (documentId: string) => {}
 }
+const CityContext = createContext(initialState);
 
 const cityReducer = function reducer(state, action){
   switch(action.type){
     case 'loading':
       return ({...state, isLoading: true});
     case 'cities/loaded':
-      return ({...state, isLoading: false, cities:(action.payload).sort((a, b) => new Date(a.date) - new Date(b.date))})
+      return ({...state, isLoading: false, cities:(action.payload).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())})
     case 'city/loaded':
       return ({...state, isLoading: false, currentCity:action.payload})
     case 'city/created':
       return ({...state, isLoading: false, 
-        cities: [...state.cities, action.payload].sort((a, b) => new Date(a.date) - new Date(b.date)), 
+        cities: [...state.cities, action.payload].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()), 
         currentCity:action.payload})
     case 'city/deleted':
+      console.log("delete payload", action.payload);
       return ({...state, isLoading: false,
         cities: state.cities.filter(city => city.documentId !== action.payload.documentId),
         currentCity: {}
@@ -37,33 +52,43 @@ const cityReducer = function reducer(state, action){
 function useFetch(){
   const [{isLoading, cities, currentCity, error}, dispatch] = useReducer(cityReducer, initialState);
 
-  const fetchData = async ({ url, type, documentId, method = 'GET', body = null }) => {
-    try{
-      dispatch({type: 'loading'});
-      const res = await fetch(`${BASE_URL}${url}`, {
-        method: method,
-        body: body ? JSON.stringify({data: body}) : null,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-      if(res.ok){
-        if(method.toUpperCase() !== 'DELETE'){
-          const data = await res.json();
-          console.log(data);
-          dispatch({type: `${type}`, payload: data.data});
-        }
-        else {
-          dispatch({type: `${type}`, payload: {documentId}});
-        }
+  const fetchData = async ({
+    url,
+    type,
+    documentId,
+    method = 'GET',
+    body = null,
+    skipErrorHandler = false // 可选字段
+  }: {
+    url: string;
+    type: string;
+    documentId?: string;
+    method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
+    body?: any;
+    skipErrorHandler?: boolean;
+  }) => {
+    body = body ? JSON.stringify({data: body}) : null;
+    console.log("body", body);
+    try {
+      dispatch({ type: 'loading' });
 
-      }else{
-        dispatch({type: 'rejected', payload: 'Failed to fetch data'});
+      const res = await request.request<any>({
+        url,
+        method,
+        data: body, // Axios 自动序列化 JSON
+        skipErrorHandler
+      });
+
+      if (method.toUpperCase() !== 'DELETE') {
+        dispatch({ type: `${type}`, payload: res.data }); // Axios 返回的 data 已封装过
+      } else {
+        console.log(documentId);
+        dispatch({ type: `${type}`, payload: { documentId } });
       }
-    }
-    catch(e){
+
+    } catch (e: any) {
       console.error(e);
-      dispatch({type: 'rejected', payload: e.message});
+      dispatch({ type: 'rejected', payload: e.message || 'Failed to fetch data' });
     }
   };
   return {isLoading, cities, currentCity, error, fetchData};

@@ -8,7 +8,6 @@ import ReactCountryFlag from "react-country-flag";
 import { useCity } from '../../store/CityContext';
 
 const GEO_BASE_URL =  `https://api.bigdatacloud.net/data/reverse-geocode-client?`;
-const BASE_URL = 'http://localhost:8000';
 
 export function convertToEmoji(countryCode){
     const codePoints = countryCode.toUpperCase()

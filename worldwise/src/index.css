@@ -3,28 +3,28 @@
 /* These CSS variables are global, so they are available in all CSS modules */
 @font-face {
   font-family: 'Poppins';
-  src: url('./fonts/Poppins-Regular.woff2') format('woff2');
+  src: url('./fonts/poppins-v24-latin-regular.woff2') format('woff2');
   font-weight: 400;
   font-style: normal;
   font-display: swap;
 }
 @font-face {
   font-family: 'Poppins';
-  src: url('./fonts/Poppins-SemiBold.woff2') format('woff2');
+  src: url('./fonts/poppins-v24-latin-600.woff2') format('woff2');
   font-weight: 600;
   font-style: normal;
   font-display: swap;
 }
 @font-face {
   font-family: 'Poppins';
-  src: url('./fonts/Poppins-Bold.woff2') format('woff2');
+  src: url('./fonts/poppins-v24-latin-700.woff2') format('woff2');
   font-weight: 700;
   font-style: normal;
   font-display: swap;
 }
 @font-face {
   font-family: 'Poppins';
-  src: url('./fonts/Poppins-Black.woff2') format('woff2');
+  src: url('./fonts/poppins-v24-latin-900.woff2') format('woff2');
   font-weight: 900;
   font-style: normal;
   font-display: swap;
@@ -32,28 +32,28 @@
 
 @font-face {
   font-family: 'Noto Sans SC';
-  src: url('./fonts/NotoSansSC-Regular.woff2') format('woff2');
+  src: url('./fonts/noto-sans-sc-v40-latin-regular.woff2') format('woff2');
   font-weight: 400;
   font-style: normal;
   font-display: swap;
 }
 @font-face {
   font-family: 'Noto Sans SC';
-  src: url('./fonts/NotoSansSC-Medium.woff2') format('woff2');
+  src: url('./fonts/noto-sans-sc-v40-latin-500.woff2') format('woff2');
   font-weight: 500;
   font-style: normal;
   font-display: swap;
 }
 @font-face {
   font-family: 'Noto Sans SC';
-  src: url('./fonts/NotoSansSC-SemiBold.woff2') format('woff2');
+  src: url('./fonts/noto-sans-sc-v40-latin-700.woff2') format('woff2');
   font-weight: 600;
   font-style: normal;
   font-display: swap;
 }
 @font-face {
   font-family: 'Noto Sans SC';
-  src: url('./fonts/NotoSansSC-Bold.woff2') format('woff2');
+  src: url('./fonts/noto-sans-sc-v40-latin-900.woff2') format('woff2');
   font-weight: 700;
   font-style: normal;
   font-display: swap;
