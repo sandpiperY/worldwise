@@ -105,6 +105,7 @@ function useFetch() {
           dispatch({ type: `${type}`, payload: res.data });
           return res.data;
         }
+        console.log(documentId);
         dispatch({ type: `${type}`, payload: { documentId } });
         return { documentId };
       } catch (e: any) {
