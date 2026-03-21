@@ -1,4 +1,3 @@
-import React from 'react'
 import { NavLink } from 'react-router-dom'
 import styles from './PageNav.module.css'
 import Logo from '../Logo'
@@ -21,6 +20,7 @@ function PageNav({ className }) {
       <ul>
           {isLoggedIn ? <li className={styles.user}>hello, {user?.username}</li> : null}
           <li><NavLink to='/'>主页</NavLink></li>
+          <li><NavLink to='/ai-assistant'>AI 助手</NavLink></li>
           <li><NavLink to='/pricing'>会员</NavLink></li>
           <li>{isLoggedIn ? <a href="#" onClick={logoutHandler}>退出登录</a> : <NavLink to='/login'>登录</NavLink>}</li>
           <li><NavLink to='/product'>关于WorldWise</NavLink></li>

@@ -4,6 +4,7 @@ import React, { Suspense } from 'react'
 const HomePage = React.lazy(() => import('./Pages/HomePage'))
 const Product = React.lazy(() => import('./Pages/Product'))
 const Pricing = React.lazy(() => import('./Pages/Pricing'))
+const AIAssistant = React.lazy(() => import('./Pages/AIAssistant'))
 const PageNotFound = React.lazy(() => import('./Pages/PageNotFound'))
 const AppLayout = React.lazy(() => import('./Pages/AppLayout'))
 const Login = React.lazy(() => import('./Pages/Login'))
@@ -42,6 +43,7 @@ function App() {
           <Route path='/' element={<HomePage />} />
           <Route path='product' element={<Product />} />
           <Route path='pricing' element={<Pricing />} />
+          <Route path='ai-assistant' element={isLoggedIn ? <AIAssistant /> : <Navigate to='/login' replace/>} />
           <Route path='login' element={<Login />} />
           <Route path='app' element={isLoggedIn ? <AppLayout /> : <Navigate to='/login' replace/>} >
             <Route index element={<Navigate to='cities' replace/>}/>

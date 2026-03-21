@@ -1,8 +1,8 @@
 // 高德地图配置
 // 获取 API Key: https://console.amap.com/dev/key/app
 export const AMAP_CONFIG = {
-  Server_KEY: 'my_server_key',
-  Web_KEY: 'my_web_key',
+  Server_KEY: 'my_api_key',
+  Web_KEY: 'my_api_key',
   
   // 地图默认配置
   DEFAULT_CENTER: [120, 30], // [经度, 纬度]

@@ -75,7 +75,7 @@ function useFetch(){
       const res = await request.request<any>({
         url,
         method,
-        data: body, // Axios 自动序列化 JSON
+        data: body,
         skipErrorHandler
       });
 
