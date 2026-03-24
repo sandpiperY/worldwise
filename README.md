@@ -1,18 +1,55 @@
-## WorldWise
+## 🌍 WorldWise
 
-**WorldWise** is an interactive travel destinations web app. This project expands on the original by integrating real-world APIs and modern state-management tools to enhance functionality and developer experience.
+**WorldWise** is a travel destinations web application built with a **frontend–backend decoupled architecture**. It allows users to explore, mark, and manage travel locations on an interactive map, while integrating real-world APIs and modern state management solutions to deliver a smooth and scalable user experience.
 
-### 🚀 What’s Improved
+---
 
-* **Map Integration**
-  Replaced the original map solution with **Gaode (Amap) Map API** for more accurate and native support in China and Asia-Pacific regions.
+## 🚀 Key Features
 
-* **Mock Backend with Strapi**
-  A local headless CMS server is included under the `/server` directory using **Strapi**, providing structured endpoints for destinations, users, and related content.
+### 🗺️ Map Integration
+- Integrated **Gaode (Amap) Map API** for accurate and region-optimized map rendering  
+- Users can interact with the map to:
+  - View destinations visually  
+  - Add and manage markers  
+  - Explore detailed location information  
 
-* **Enhanced Auth with RTK Query**
-  The authentication system (registration & login) is completely rebuilt using **Redux Toolkit Query (RTKQ)** for reliable async state handling, caching, and server synchronization.
+### 🔐 Authentication System
+- Rebuilt authentication flow using **Redux Toolkit Query (RTK Query)**  
+- Supports:
+  - User registration and login  
+  - Persistent authentication state  
+  - Automatic request caching and synchronization  
 
+### 📍 Destination Management
+- Create, view, and manage travel destinations  
+- Structured data powered by a **Strapi-based headless CMS**  
+- Seamless frontend-backend data interaction  
+
+### 🧠 State Management Optimization
+- Centralized global state using **Redux Toolkit**  
+- Efficient async handling via **RTK Query**:
+  - Request deduplication  
+  - Cache management  
+  - Improved performance across pages  
+
+### ⚙️ Local Backend with Strapi
+- Local backend server located in `/server` directory  
+- Built with **Strapi** to provide:
+  - RESTful APIs  
+  - Content modeling for destinations and users  
+  - Rapid development and testing support  
+
+---
+
+## 🏗️ Architecture Highlights
+
+- **Frontend–Backend Decoupling** for scalability and maintainability  
+- **Component-based UI design** using React for high reusability  
+- **Centralized state & API layer** with Redux Toolkit + RTK Query  
+- **Consistent data flow** with built-in caching and synchronization  
+- **Modular project structure** supporting future expansion  
+
+---
 
 ## Page Previews
 
@@ -36,28 +73,45 @@ User registration and login powered by **RTK Query** for smooth asynchronous han
 provides an overview of the WorldWise project
 <img width="1920" height="1001" alt="屏幕截图 2026-02-21 213233" src="https://github.com/user-attachments/assets/5499188a-fa73-4bb4-bdfa-faa970221321" />
 
+---
 
-## Tech Stack
+## 🛠️ Tech Stack
 
-**WorldWise** leverages modern frontend and backend technologies to deliver a smooth and interactive user experience:
+**WorldWise** leverages modern frontend and backend technologies to deliver a smooth and interactive experience:
 
-* **Frontend:**
+### Frontend
+- **React** – Component-based UI development  
+- **Redux Toolkit & RTK Query** – Global state management and async data fetching  
+- **React Router** – Client-side routing  
+- **Axios / Fetch** – HTTP request handling  
 
-  * **React** – UI library for building component-based interfaces
-  * **Redux Toolkit & RTK Query** – State management and async data fetching
-  * **React Router** – Routing between pages
-  * **Axios / Fetch** – HTTP requests
+### Backend / Mock Server
+- **Strapi** – Headless CMS for structured APIs and content management  
+- **Node.js & Express** – Backend runtime (via Strapi)  
 
-* **Backend / Mock Server:**
+### Styling & UI
+- **CSS / SCSS** – Component styling and layout  
 
-  * **Strapi** – Headless CMS to simulate API endpoints for destinations, users, and content
-  * **Node.js & Express** – Underlying server framework (via Strapi)
+---
 
-* **Styling & UI:**
+## 📦 Getting Started
 
-  * **CSS / SCSS** – Styling components
-
-
+### 1. Install dependencies
+```bash
+npm install
+```
+### 2. Run frontend
+```bash
+npm run dev
+```
+3. Run backend (Strapi)
+```bash
+cd server
+npm install
+npm run develop
+```
+## 🌟 Future Improvements
+Deploy backend to cloud services (e.g., AWS / ECS)
 
 
 
