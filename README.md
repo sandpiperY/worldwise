@@ -2,7 +2,6 @@
 
 **WorldWise** is a travel destinations web application built with a **frontend–backend decoupled architecture**. It allows users to explore, mark, and manage travel locations on an interactive map, while integrating real-world APIs and modern state management solutions to deliver a smooth and scalable user experience.
 
----
 
 ## 🚀 Key Features
 
@@ -39,7 +38,6 @@
   - Content modeling for destinations and users  
   - Rapid development and testing support  
 
----
 
 ## 🏗️ Architecture Highlights
 
@@ -49,7 +47,6 @@
 - **Consistent data flow** with built-in caching and synchronization  
 - **Modular project structure** supporting future expansion  
 
----
 
 ## Page Previews
 
@@ -73,7 +70,6 @@ User registration and login powered by **RTK Query** for smooth asynchronous han
 provides an overview of the WorldWise project
 <img width="1920" height="1001" alt="屏幕截图 2026-02-21 213233" src="https://github.com/user-attachments/assets/5499188a-fa73-4bb4-bdfa-faa970221321" />
 
----
 
 ## 🛠️ Tech Stack
 
@@ -92,7 +88,6 @@ provides an overview of the WorldWise project
 ### Styling & UI
 - **CSS / SCSS** – Component styling and layout  
 
----
 
 ## 📦 Getting Started
 
