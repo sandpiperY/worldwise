@@ -5,10 +5,14 @@ import Message from '../../../components/Message/Message.jsx'
 import { useCity } from '../../../store/CityContext'
 
 function CountryList() {
-  const {cities, isLoading} = useCity();
+  const { cities, isLoading, error } = useCity();
 
-  if(isLoading) return <Spinner/>;
-  
+  if (isLoading) return <Spinner/>;
+
+  if (!isLoading && error) {
+    return <div className={styles.listErrorPlaceholder} aria-hidden />;
+  }
+
   if(!cities || cities.length === 0) {
     return (
       <Message

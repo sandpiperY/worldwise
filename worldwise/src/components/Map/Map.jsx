@@ -17,6 +17,9 @@ function Map() {
   const {isLoading: isLoadingPosition, position: localPosition, getPosition} = useGeolocation();
   const {lat: urlLat, lng: urlLng} = useUrlPosition();
   const initializedRef = useRef(false);
+  const prevCenterRef = useRef(null);
+
+  const formatCenterKey = (lat, lng) => `${Number(lat).toFixed(6)},${Number(lng).toFixed(6)}`;
   
   // 使用 useState 存储坐标，避免不必要的重新渲染和地图更新
   const [mapCenter, setMapCenter] = useState(() => {
@@ -49,7 +52,7 @@ function Map() {
         console.log('[Map] mapCenter updated', mapCenter);
       }
     } 
-  }, [urlLat, urlLng, mapCenter]);
+  }, [urlLat, urlLng]);
 
   const initMap = useCallback(() => {
     if (!window.AMap || !mapRef.current) return;
@@ -75,6 +78,13 @@ function Map() {
       map.on('complete', () => {
         setMapLoaded(true);
       });
+
+      // 地图被拖动/缩放后，同步记录当前中心点，避免后续“同坐标”判断失真。
+      map.on('moveend', () => {
+        const center = map.getCenter();
+        if (!center) return;
+        prevCenterRef.current = formatCenterKey(center.lat, center.lng);
+      });
       
       // 添加地图点击事件，跳转到表单页面
       map.on('click', (e) => {
@@ -94,7 +104,7 @@ function Map() {
       const existingScript = document.querySelector('script[src*="webapi.amap.com"]');
       if (!existingScript) {
         const script = document.createElement('script');
-        script.src = `https://webapi.amap.com/maps?v=2.0&key=${AMAP_CONFIG.Web_KEY}&callback=initAMap`;
+        script.src = `https://webapi.amap.com/maps?v=2.0&key=${AMAP_CONFIG.AMAP_KEY}&callback=initAMap`;
         script.async = true;
         script.defer = true;
         script.id = 'amap-script';
@@ -189,12 +199,9 @@ function Map() {
 
       markersRef.current.push(marker);
     });
-  }, [cities, navigate, mapLoaded]);
+  }, [cities, mapLoaded]);
 
   // 根据 state 中的坐标更新地图中心位置
-  // 使用 useRef 存储上一次的坐标，避免相同坐标的重复更新
-  const prevCenterRef = useRef(null);
-  
   useEffect(() => {
     if (!mapInstanceRef.current || !mapCenter) return;
 
@@ -202,7 +209,7 @@ function Map() {
     console.log('[Map] mapCenter seted to', mapCenter);
 
     // 检查坐标是否与上一次相同，避免重复更新
-    const currentCenter = `${lat},${lng}`;
+    const currentCenter = formatCenterKey(lat, lng);
     if (prevCenterRef.current === currentCenter) return;
     
     prevCenterRef.current = currentCenter;

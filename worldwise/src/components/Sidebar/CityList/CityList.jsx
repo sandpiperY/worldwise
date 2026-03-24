@@ -5,9 +5,13 @@ import Message from '../../../components/Message/Message.jsx'
 import { useCity } from '../../../store/CityContext'
 
 function CityList() {
-  const {cities, isLoading} = useCity();
-  if(isLoading) return <Spinner/>;
-  
+  const { cities, isLoading, error } = useCity();
+  if (isLoading) return <Spinner/>;
+
+  if (!isLoading && error) {
+    return <div className={styles.listErrorPlaceholder} aria-hidden />;
+  }
+
   if(!cities || cities.length === 0) {
     return (
       <Message

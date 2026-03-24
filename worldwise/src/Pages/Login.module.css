@@ -1,6 +1,6 @@
 .login {
     margin: 2.5rem;
-    padding: 2.5rem 5rem;
+    padding: 1.2rem 5rem 2.5rem;
     background-color: var(--color-dark--1);
     height: calc(100vh - 5rem);
 }
@@ -15,7 +15,7 @@
     gap: 2rem;
 
     width: 48rem;
-    margin: 8rem auto;
+    margin: 1.2rem auto 0;
 }
 
 .row {
@@ -27,4 +27,50 @@
 .buttons {
     display: flex;
     justify-content: space-between;
+}
+
+/* 固定高度占位，避免连接错误出现/消失时表单上下跳动 */
+.alertSlot {
+    width: 48rem;
+    max-width: 100%;
+    min-height: 5.2rem;
+    margin: 0 auto 0.35rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+}
+
+.alert {
+    width: 100%;
+    min-height: 5.2rem;
+    margin: 0;
+    padding: 0.65rem 1rem;
+    border-radius: 7px;
+    font-size: 1.4rem;
+    line-height: 1.5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    box-sizing: border-box;
+}
+
+.alertEmpty {
+    background: transparent;
+    color: transparent;
+    border: 1px solid transparent;
+    user-select: none;
+}
+
+.alertError {
+    background: rgba(220, 53, 69, 0.15);
+    color: #ff8a8a;
+    border: 1px solid rgba(220, 53, 69, 0.35);
+}
+
+.alertSuccess {
+    background: rgba(40, 167, 69, 0.15);
+    color: #8fd99a;
+    border: 1px solid rgba(40, 167, 69, 0.35);
 }

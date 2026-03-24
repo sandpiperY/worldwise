@@ -10,14 +10,31 @@ import { useLocation } from "react-router-dom";
 import store from "../store/store.js";
 import { login as authLogin } from "../store/authSlice.js";
 
+/** 解析 Strapi / RTK Query 登录注册错误，避免缺字段导致白屏 */
+function getAuthErrorMessage(error) {
+  if (!error) return "";
+  const data = error.data;
+  if (data && typeof data === "object") {
+    if (data.error?.message) return String(data.error.message);
+    if (typeof data.message === "string") return data.message;
+  }
+  if (typeof data === "string") return data;
+  if (error.status === "FETCH_ERROR" || error.status === "PARSING_ERROR") {
+    return "无法连接服务器，请确认后端已启动且地址配置正确";
+  }
+  if (typeof error.error === "string") return error.error;
+  return "登录失败，请检查账号密码后重试";
+}
+
 function Login() {
 
   const [email, setEmail] = useState('user@sample.com');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('password');
   const [isLoginForm, setIsLoginForm] = useState(true);
-  const [register, {isSuccess: regSuccess, error: regError}] = useRegisterMutation();
-  const [loginUser, {error: loginError}] = useLoginMutation();
+  const [registerFieldError, setRegisterFieldError] = useState(false);
+  const [register, { isSuccess: regSuccess, error: regError, reset: resetRegister }] = useRegisterMutation();
+  const [loginUser, { error: loginError, reset: resetLogin }] = useLoginMutation();
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -25,12 +42,15 @@ function Login() {
 
   const emailChangeHandler = useCallback((e) => {
     setEmail(e.target.value);
+    setRegisterFieldError(false);
   }, []);
   const passwordChangeHandler = useCallback((e) => {
     setPassword(e.target.value);
+    setRegisterFieldError(false);
   }, []);
   const usernameChangeHandler = useCallback((e) => {
     setUsername(e.target.value);
+    setRegisterFieldError(false);
   }, []);
   const submitHandler = useCallback((e) => {
     e.preventDefault();
@@ -47,10 +67,11 @@ function Login() {
         }
       })
     } else {
-      if (!username || !email || !password) {
-        console.log('请填写用户名、邮箱和密码');
+      if (!username?.trim() || !email?.trim() || !password) {
+        setRegisterFieldError(true);
         return;
       }
+      setRegisterFieldError(false);
       console.log('注册', email, password);
       register({username, email, password})
       .then(res => {
@@ -69,19 +90,46 @@ function Login() {
 
   const toggleFormHandler = useCallback((e) => {
     e.preventDefault();
+    resetLogin();
+    resetRegister();
+    setRegisterFieldError(false);
     setIsLoginForm(!isLoginForm);
-  }, [isLoginForm]);
+  }, [isLoginForm, resetLogin, resetRegister]);
 
+
+  const loginAlertText =
+    isLoginForm && loginError ? getAuthErrorMessage(loginError) : "";
+  const registerAlertText = !isLoginForm
+    ? regSuccess
+      ? "注册成功，正在跳转…"
+      : regError
+        ? getAuthErrorMessage(regError)
+        : registerFieldError
+          ? "请填写用户名、邮箱和密码"
+          : ""
+    : "";
+  const alertText = isLoginForm ? loginAlertText : registerAlertText;
+  const hasAlert = Boolean(alertText);
+  const alertTone =
+    !isLoginForm && regSuccess ? "success" : hasAlert ? "error" : "empty";
+  const toneClass =
+    alertTone === "success"
+      ? styles.alertSuccess
+      : alertTone === "error"
+        ? styles.alertError
+        : styles.alertEmpty;
 
   return (
     <main className={styles.login}>
         <PageNav/>
-        <p style={{color: regSuccess ? 'green' : regError ? 'red' : 'black'}}>
-            {regSuccess ? '注册成功, 等待跳转...' : regError ? regError.data.error.message : ''}
-        </p>
-        <p style={{color: 'red'}}>
-            {loginError ? loginError.data.error.message : ''}
-        </p>
+        <div className={styles.alertSlot}>
+          <p
+            className={`${styles.alert} ${toneClass}`}
+            role={hasAlert ? (isLoginForm ? "alert" : "status") : "presentation"}
+          >
+            {alertText || "\u00a0"}
+          </p>
+        </div>
         <form className={styles.form}>
           {
             !isLoginForm && (

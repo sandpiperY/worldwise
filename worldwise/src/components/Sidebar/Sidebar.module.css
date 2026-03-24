@@ -8,6 +8,46 @@
     align-items: center;
     height: calc(100vh - 4.8rem);
 }
+
+/* 固定占位，避免「无连接」出现/消失时侧栏内容上下跳动 */
+.connectionSlot {
+    width: 100%;
+    min-height: 4.8rem;
+    max-height: 4.8rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 0.8rem;
+    margin-bottom: 0.4rem;
+    box-sizing: border-box;
+    flex-shrink: 0;
+    border-radius: 6px;
+    background: transparent;
+    transition: background 0.15s ease, opacity 0.15s ease;
+}
+
+.connectionSlot[data-visible="true"] {
+    background: rgba(220, 53, 69, 0.12);
+    border: 1px solid rgba(220, 53, 69, 0.28);
+}
+
+.connectionSlot[data-visible="false"] .connectionText {
+    opacity: 0;
+}
+
+.connectionSlot[data-visible="true"] .connectionText {
+    opacity: 1;
+}
+
+.connectionText {
+    margin: 0;
+    text-align: center;
+    font-size: 1.35rem;
+    font-weight: 600;
+    line-height: 1.5;
+    color: #ff8a8a;
+    width: 100%;
+}
   
 .footer {
     margin-top: auto;

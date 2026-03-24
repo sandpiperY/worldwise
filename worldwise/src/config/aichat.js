@@ -1,7 +1,4 @@
+// Vite 的自定义环境变量必须是 VITE_ 前缀
 export const AI_CHAT_CONFIG = {
-  API_KEY: 'my_api_key',
-  API_URL:
-    import.meta.env.VITE_DOUBAO_API_URL ||
-    'https://ark.cn-beijing.volces.com/api/v3/chat/completions',
-  MODEL: 'ep-m-20260306202509-9fprj'
+  API_URL: `${(import.meta.env.VITE_STRAPI_URL || 'http://localhost:1337').replace(/\/$/, '')}/api/ai-chat/stream`
 };

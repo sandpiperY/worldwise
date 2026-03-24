@@ -168,15 +168,6 @@ function AIAssistant() {
     streamEndedRef.current = false;
     stopReasonRef.current = 'none';
 
-    if (!AI_CHAT_CONFIG.API_KEY) {
-      setError('缺少豆包 API Key，请先在 .env 中配置 VITE_DOUBAO_API_KEY');
-      return;
-    }
-    if (!AI_CHAT_CONFIG.MODEL) {
-      setError('缺少豆包模型，请先在 .env 中配置 VITE_DOUBAO_MODEL');
-      return;
-    }
-
     // 构造对话历史
     const payloadMessages = [
       ...messages
@@ -199,13 +190,10 @@ function AIAssistant() {
       const res = await fetch(AI_CHAT_CONFIG.API_URL, {
         method: 'POST',
         headers: {
-          Authorization: `Bearer ${AI_CHAT_CONFIG.API_KEY}`,
           'Content-Type': 'application/json',
           Accept: 'text/event-stream' // 需要sse流
         },
         body: JSON.stringify({
-          model: AI_CHAT_CONFIG.MODEL,
-          stream: true,
           temperature: 0.7,
           messages: payloadMessages
         }),
