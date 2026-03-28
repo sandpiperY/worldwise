@@ -1,5 +1,16 @@
 const NAME = 'auth_token';
 
+/**
+ * 本地 http（含 vercel dev）不能加 Secure，否则浏览器会丢弃 Set-Cookie。
+ * 线上 Vercel 为 https + x-forwarded-proto=https。
+ */
+function secureCookieSuffix(req) {
+  if (req?.headers?.['x-forwarded-proto'] === 'http') return '';
+  if (process.env.VERCEL !== '1') return '';
+  if (process.env.VERCEL_ENV === 'development') return '';
+  return '; Secure';
+}
+
 export function readAuthToken(req) {
   const raw = req.headers.cookie;
   if (!raw) return null;
@@ -7,18 +18,19 @@ export function readAuthToken(req) {
   return m ? decodeURIComponent(m[1].trim()) : null;
 }
 
-export function setAuthCookie(res, jwt, maxAgeSec) {
-  const secure = process.env.VERCEL === '1' ? '; Secure' : '';
+export function setAuthCookie(res, jwt, maxAgeSec, req) {
   const v = encodeURIComponent(jwt);
   res.setHeader(
     'Set-Cookie',
-    `${NAME}=${v}; HttpOnly${secure}; SameSite=Lax; Path=/; Max-Age=${maxAgeSec}`
+    `${NAME}=${v}; HttpOnly${secureCookieSuffix(req)}; SameSite=Lax; Path=/; Max-Age=${maxAgeSec}`
   );
 }
 
-export function clearAuthCookie(res) {
-  const secure = process.env.VERCEL === '1' ? '; Secure' : '';
-  res.setHeader('Set-Cookie', `${NAME}=; HttpOnly${secure}; SameSite=Lax; Path=/; Max-Age=0`);
+export function clearAuthCookie(res, req) {
+  res.setHeader(
+    'Set-Cookie',
+    `${NAME}=; HttpOnly${secureCookieSuffix(req)}; SameSite=Lax; Path=/; Max-Age=0`
+  );
 }
 
 export function strapiOrigin() {

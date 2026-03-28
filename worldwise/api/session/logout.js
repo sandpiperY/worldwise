@@ -5,6 +5,6 @@ export default async function handler(req, res) {
     res.status(405).end();
     return;
   }
-  clearAuthCookie(res);
+  clearAuthCookie(res, req);
   res.status(200).json({ ok: true });
 }

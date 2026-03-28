@@ -19,5 +19,10 @@ export default async function handler(req, res) {
     res.status(r.status).json(data);
     return;
   }
-  res.status(200).json({ user: data });
+  // Strapi v4 常见为扁平对象；v4 REST 也可能包一层 data
+  const user =
+    data && typeof data === 'object' && data.data !== undefined && !data.id
+      ? data.data
+      : data;
+  res.status(200).json({ user });
 }

@@ -22,6 +22,6 @@ export default async function handler(req, res) {
     res.status(502).json({ error: { message: '注册响应无效' } });
     return;
   }
-  setAuthCookie(res, data.jwt, MAX_AGE);
+  setAuthCookie(res, data.jwt, MAX_AGE, req);
   res.status(200).json({ user: data.user });
 }
