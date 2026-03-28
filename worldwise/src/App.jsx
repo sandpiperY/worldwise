@@ -15,25 +15,35 @@ const Form = React.lazy(() => import('./components/Form/Form.jsx'))
 import Spinner from './components/Spinner/Spinner'
 import {CityProvider} from './store/CityContext'
 import { useDispatch } from 'react-redux';
-import { logout } from './store/authSlice';
+import { login, logout } from './store/authSlice';
 import { useSelector } from 'react-redux';
 import { useEffect } from 'react';
+import { usesSessionCookie } from './config/strapiBase.js';
 
 function App() {
   const [isLoggedIn, expiresAt] = useSelector((state) => [state.auth.isLoggedIn, state.auth.expiresAt]);
   const dispatch = useDispatch();
+
   useEffect(() => {
+    if (!usesSessionCookie()) return;
+    fetch('/api/session/me', { credentials: 'include' })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (data?.user) dispatch(login({ user: data.user }));
+      })
+      .catch(() => {});
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (!expiresAt) return;
     const timeout = expiresAt - Date.now();
-    if(timeout <= 1000 * 60){
+    if (timeout <= 1000 * 60) {
       dispatch(logout());
+      return;
     }
-
-    const timer = setTimeout(()=>{
-      dispatch(logout())
-    }, timeout);
-
+    const timer = setTimeout(() => dispatch(logout()), timeout);
     return () => clearTimeout(timer);
-  }, [expiresAt]);
+  }, [expiresAt, dispatch]);
 
   return (
     <CityProvider>

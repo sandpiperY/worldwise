@@ -1,51 +1,57 @@
-import {createSlice} from '@reduxjs/toolkit'
+import { createSlice } from '@reduxjs/toolkit';
+import { usesSessionCookie } from '../config/strapiBase.js';
+
+const weekMs = 1000 * 60 * 60 * 24 * 7;
+
+function buildInitialAuthState() {
+  if (usesSessionCookie()) {
+    return { isLoggedIn: false, user: null, token: null, expiresAt: 0 };
+  }
+  const token = localStorage.getItem('token');
+  const user = localStorage.getItem('user');
+  if (token && user) {
+    return {
+      isLoggedIn: true,
+      token,
+      user: JSON.parse(user),
+      expiresAt: Number(localStorage.getItem('expiresAt')) || 0
+    };
+  }
+  return { isLoggedIn: false, user: null, token: null, expiresAt: 0 };
+}
 
 const authSlice = createSlice({
-    name: 'auth',
-    initialState: () =>{
-        const token = localStorage.getItem('token');
-        const user = localStorage.getItem('user');
-
-        if(token && user){
-            return {
-                isLoggedIn: true,
-                token,
-                user:JSON.parse(user),
-                expiresAt: localStorage.getItem('expiresAt') || 0,
-            }
-        }
-
-        return {
-            isLoggedIn: false,
-            token: null,
-            user: null,
-            expiresAt: 0,
-        }
+  name: 'auth',
+  initialState: buildInitialAuthState(),
+  reducers: {
+    login: (state, action) => {
+      state.isLoggedIn = true;
+      state.user = action.payload.user;
+      const now = Date.now();
+      state.expiresAt = action.payload.expiresAt ?? now + weekMs;
+      if (usesSessionCookie()) {
+        state.token = null;
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        localStorage.removeItem('expiresAt');
+      } else {
+        state.token = action.payload.token ?? null;
+        if (state.token) localStorage.setItem('token', state.token);
+        localStorage.setItem('user', JSON.stringify(state.user));
+        localStorage.setItem('expiresAt', String(state.expiresAt));
+      }
     },
-    reducers: {
-        login: (state, action) => {
-            state.isLoggedIn = true;
-            state.token = action.payload.token;
-            state.user = action.payload.user;
-            const currentTime = new Date().getTime();
-            const timeout = 1000 * 60 * 60 * 24 * 7; // 7天
-            state.expiresAt = currentTime + timeout;
-            localStorage.setItem('token', action.payload.token);
-            localStorage.setItem('user', JSON.stringify(action.payload.user));
-            localStorage.setItem('expiresAt', state.expiresAt);
-        },
-
-        logout: (state) => {
-            state.isLoggedIn = false;
-            state.token = null;
-            state.user = null;
-            state.expiresAt = 0;
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
-            localStorage.removeItem('expiresAt');
-        }
+    logout: (state) => {
+      state.isLoggedIn = false;
+      state.token = null;
+      state.user = null;
+      state.expiresAt = 0;
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      localStorage.removeItem('expiresAt');
     }
-})
+  }
+});
 
-export const {login, logout} = authSlice.actions;
+export const { login, logout } = authSlice.actions;
 export default authSlice.reducer;

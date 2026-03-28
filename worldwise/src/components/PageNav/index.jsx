@@ -4,13 +4,17 @@ import Logo from '../Logo'
 import { useSelector } from 'react-redux';
 import { logout } from '../../store/authSlice';
 import { useDispatch } from 'react-redux';
+import { usesSessionCookie } from '../../config/strapiBase.js';
 
 function PageNav({ className }) {
   const dispatch = useDispatch();
-  const [isLoggedIn, user] = useSelector((state) => [state.auth.isLoggedIn, state.auth.user]);
-  const logoutHandler = (e) => {
+    const [isLoggedIn, user] = useSelector((state) => [state.auth.isLoggedIn, state.auth.user]);
+  const logoutHandler = async (e) => {
     if(confirm('是否确定退出登录？')){
       e.preventDefault();
+      if (usesSessionCookie()) {
+        await fetch('/api/session/logout', { method: 'POST', credentials: 'include' });
+      }
       dispatch(logout());
     }
   };

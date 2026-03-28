@@ -3,7 +3,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import PageNav from '../components/PageNav';
 import styles from './AIAssistant.module.css';
-import { getStrapiApiBase } from '../config/strapiBase.js';
+import { getStrapiApiBase, usesSessionCookie } from '../config/strapiBase.js';
 
 
 function getAssistantText(payload) {
@@ -197,7 +197,8 @@ function AIAssistant() {
           temperature: 0.7,
           messages: payloadMessages
         }),
-        signal: controller.signal // 接收中断信号
+        signal: controller.signal,
+        ...(usesSessionCookie() ? { credentials: 'include' } : {})
       });
 
       if (!res.ok) {
