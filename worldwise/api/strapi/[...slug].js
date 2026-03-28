@@ -1,22 +1,32 @@
 import { Readable } from 'stream';
 import { readAuthToken, strapiOrigin } from '../../lib/strapiServerAuth.js';
 
-/** Vercel 有时不把 catch-all 填进 req.query，从 pathname 兜底 */
+const STRAPI_PROXY_PREFIX = '/api/strapi/';
+
+/**
+ * 优先用 req.url 的 pathname（与 HTTP 方法无关，DELETE 也完整）。
+ * 部分环境下 req.query.slug 不全，只靠 query 会把 DELETE 打成 /api/cities 导致异常。
+ */
 function slugPath(req) {
-  const s = req.query.slug;
-  if (s) return Array.isArray(s) ? s.join('/') : String(s);
   try {
     const host = req.headers.host || 'localhost';
     const proto = req.headers['x-forwarded-proto'] || 'http';
-    const u = new URL(req.url, `${proto}://${host}`);
-    const prefix = '/api/strapi/';
-    if (u.pathname.startsWith(prefix)) {
-      const rest = u.pathname.slice(prefix.length);
-      return rest ? decodeURIComponent(rest) : '';
+    const u = new URL(req.url || '/', `${proto}://${host}`);
+    if (u.pathname.startsWith(STRAPI_PROXY_PREFIX)) {
+      const rest = u.pathname.slice(STRAPI_PROXY_PREFIX.length);
+      if (rest) {
+        try {
+          return decodeURIComponent(rest);
+        } catch {
+          return rest;
+        }
+      }
     }
   } catch {
     /* ignore */
   }
+  const s = req.query?.slug;
+  if (s) return Array.isArray(s) ? s.join('/') : String(s);
   return '';
 }
 
@@ -47,6 +57,7 @@ export default async function handler(req, res) {
 
   const token = readAuthToken(req);
   const headers = new Headers();
+  /** 与前端 axios（CityContext：有 payload 则 JSON.stringify({ data })，否则 data 为 null）发出的头一致，原样转发 */
   const ct = req.headers['content-type'];
   if (ct) headers.set('content-type', ct);
   if (token && !isStrapiCitiesContentPath(pathPart)) {
