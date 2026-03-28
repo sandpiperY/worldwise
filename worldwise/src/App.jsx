@@ -15,16 +15,18 @@ const Form = React.lazy(() => import('./components/Form/Form.jsx'))
 import Spinner from './components/Spinner/Spinner'
 import {CityProvider} from './store/CityContext'
 import { useDispatch } from 'react-redux';
-import { login, logout } from './store/authSlice';
+import { login, logout, sessionBootstrapDone } from './store/authSlice';
 import { useSelector } from 'react-redux';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { usesSessionCookie } from './config/strapiBase.js';
 
 function App() {
-  const [isLoggedIn, expiresAt] = useSelector((state) => [state.auth.isLoggedIn, state.auth.expiresAt]);
+  const [isLoggedIn, expiresAt, sessionBootstrapped] = useSelector((state) => [
+    state.auth.isLoggedIn,
+    state.auth.expiresAt,
+    state.auth.sessionBootstrapped
+  ]);
   const dispatch = useDispatch();
-  /** Cookie 模式下须等 /api/session/me 结束再判断未登录，否则首屏 isLoggedIn=false 会误跳登录页 */
-  const [sessionReady, setSessionReady] = useState(() => !usesSessionCookie());
 
   useEffect(() => {
     if (!usesSessionCookie()) return;
@@ -34,7 +36,7 @@ function App() {
         if (data?.user) dispatch(login({ user: data.user }));
       })
       .catch(() => {})
-      .finally(() => setSessionReady(true));
+      .finally(() => dispatch(sessionBootstrapDone()));
   }, [dispatch]);
 
   useEffect(() => {
@@ -59,7 +61,7 @@ function App() {
           <Route
             path='ai-assistant'
             element={
-              usesSessionCookie() && !sessionReady ? (
+              usesSessionCookie() && !sessionBootstrapped ? (
                 <Spinner />
               ) : isLoggedIn ? (
                 <AIAssistant />
@@ -72,7 +74,7 @@ function App() {
           <Route
             path='app'
             element={
-              usesSessionCookie() && !sessionReady ? (
+              usesSessionCookie() && !sessionBootstrapped ? (
                 <Spinner />
               ) : isLoggedIn ? (
                 <AppLayout />

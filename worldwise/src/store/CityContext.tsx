@@ -7,6 +7,8 @@ import React, {
   useReducer,
 } from "react";
 import { request } from "../config/request";
+import { useSelector } from "react-redux";
+import { usesSessionCookie } from "../config/strapiBase.js";
 
 interface CityContextType {
   cities: any[];
@@ -137,11 +139,15 @@ function useFetch() {
         console.log(documentId);
         dispatch({ type: `${type}`, payload: { documentId } });
         return { documentId };
-      } catch (e: any) {
+      } catch (e: unknown) {
         console.error(e);
+        const msg =
+          e && typeof e === "object" && "message" in e && typeof (e as { message: unknown }).message === "string"
+            ? (e as { message: string }).message
+            : "请求失败";
         dispatch({
           type: "rejected",
-          payload: e.message || "Failed to fetch data",
+          payload: msg,
         });
         throw e;
       }
@@ -157,10 +163,14 @@ function useFetch() {
 // value 使用 useMemo + 稳定回调，避免 Provider 因父组件重渲染而传入「新对象」导致 consumer 无谓更新
 function CityProvider({ children }: { children: React.ReactNode }) {
   const { cities, currentCity, isLoading, error, fetchData } = useFetch();
+  const sessionBootstrapped = useSelector(
+    (s: { auth: { sessionBootstrapped: boolean } }) => s.auth.sessionBootstrapped
+  );
 
   useEffect(() => {
+    if (usesSessionCookie() && !sessionBootstrapped) return;
     void fetchData({ url: "/cities", type: "cities/loaded" }).catch(() => {});
-  }, [fetchData]);
+  }, [fetchData, sessionBootstrapped]);
 
   const getCity = useCallback(
     (documentId: string) =>

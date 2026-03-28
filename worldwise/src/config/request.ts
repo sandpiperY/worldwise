@@ -12,6 +12,19 @@ type ResponseData<T = unknown> = {
   data: T;
 };
 
+/** Strapi 常见 { error: { message, details } } */
+function pickStrapiMessage(data: unknown): string {
+  if (!data || typeof data !== 'object') return '';
+  const d = data as Record<string, unknown>;
+  if (typeof d.message === 'string') return d.message;
+  const err = d.error;
+  if (err && typeof err === 'object') {
+    const e = err as Record<string, unknown>;
+    if (typeof e.message === 'string') return e.message;
+  }
+  return '';
+}
+
 class Request {
   private instance: AxiosInstance;
   private retryLimit = 3;
@@ -91,20 +104,21 @@ class Request {
 
   private handleServerError(error: AxiosError, config: RequestConfig) {
     const status = error.response?.status;
-    const data = error.response?.data as ResponseData;
+    const data = error.response?.data;
+    const strapiMsg = pickStrapiMessage(data);
     switch (status) {
       case 500:
-        showError('服务器内部错误');
+        showError(strapiMsg || '服务器内部错误');
         break;
       case 403:
-        showError('无访问权限');
+        showError(strapiMsg || '无访问权限');
         break;
       default:
-        showError(data?.message || '未知错误');
+        showError(strapiMsg || (data as ResponseData)?.message || error.message || '未知错误');
     }
     return Promise.reject({
       code: status || -1,
-      message: data?.message || error.message
+      message: strapiMsg || (data as ResponseData)?.message || error.message || '请求失败'
     });
   }
 }
