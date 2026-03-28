@@ -17,21 +17,24 @@ import {CityProvider} from './store/CityContext'
 import { useDispatch } from 'react-redux';
 import { login, logout } from './store/authSlice';
 import { useSelector } from 'react-redux';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { usesSessionCookie } from './config/strapiBase.js';
 
 function App() {
   const [isLoggedIn, expiresAt] = useSelector((state) => [state.auth.isLoggedIn, state.auth.expiresAt]);
   const dispatch = useDispatch();
+  /** Cookie 模式下须等 /api/session/me 结束再判断未登录，否则首屏 isLoggedIn=false 会误跳登录页 */
+  const [sessionReady, setSessionReady] = useState(() => !usesSessionCookie());
 
   useEffect(() => {
     if (!usesSessionCookie()) return;
     fetch('/api/session/me', { credentials: 'include' })
-      .then((r) => (r.ok ? r.json() : null))
-      .then((data) => {
+      .then(async (r) => {
+        const data = r.ok ? await r.json().catch(() => null) : null;
         if (data?.user) dispatch(login({ user: data.user }));
       })
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => setSessionReady(true));
   }, [dispatch]);
 
   useEffect(() => {
@@ -53,9 +56,31 @@ function App() {
           <Route path='/' element={<HomePage />} />
           <Route path='product' element={<Product />} />
           <Route path='pricing' element={<Pricing />} />
-          <Route path='ai-assistant' element={isLoggedIn ? <AIAssistant /> : <Navigate to='/login' replace/>} />
+          <Route
+            path='ai-assistant'
+            element={
+              usesSessionCookie() && !sessionReady ? (
+                <Spinner />
+              ) : isLoggedIn ? (
+                <AIAssistant />
+              ) : (
+                <Navigate to='/login' replace />
+              )
+            }
+          />
           <Route path='login' element={<Login />} />
-          <Route path='app' element={isLoggedIn ? <AppLayout /> : <Navigate to='/login' replace/>} >
+          <Route
+            path='app'
+            element={
+              usesSessionCookie() && !sessionReady ? (
+                <Spinner />
+              ) : isLoggedIn ? (
+                <AppLayout />
+              ) : (
+                <Navigate to='/login' replace />
+              )
+            }
+          >
             <Route index element={<Navigate to='cities' replace/>}/>
             <Route path='cities' element={<CityList/>}/>
             <Route path='cities/:id' element={<City />}/>

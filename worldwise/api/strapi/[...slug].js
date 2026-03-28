@@ -1,16 +1,30 @@
 import { Readable } from 'stream';
 import { readAuthToken, strapiOrigin } from '../../lib/strapiServerAuth.js';
 
-function slugPath(query) {
-  const s = query.slug;
-  if (!s) return '';
-  return Array.isArray(s) ? s.join('/') : String(s);
+/** Vercel 有时不把 catch-all 填进 req.query，从 pathname 兜底 */
+function slugPath(req) {
+  const s = req.query.slug;
+  if (s) return Array.isArray(s) ? s.join('/') : String(s);
+  try {
+    const host = req.headers.host || 'localhost';
+    const proto = req.headers['x-forwarded-proto'] || 'http';
+    const u = new URL(req.url, `${proto}://${host}`);
+    const prefix = '/api/strapi/';
+    if (u.pathname.startsWith(prefix)) {
+      const rest = u.pathname.slice(prefix.length);
+      return rest ? decodeURIComponent(rest) : '';
+    }
+  } catch {
+    /* ignore */
+  }
+  return '';
 }
 
 export default async function handler(req, res) {
-  const pathPart = slugPath(req.query);
+  const pathPart = slugPath(req);
   const host = req.headers.host || 'localhost';
-  const urlObj = new URL(req.url, `http://${host}`);
+  const proto = req.headers['x-forwarded-proto'] || 'http';
+  const urlObj = new URL(req.url, `${proto}://${host}`);
   const targetUrl = `${strapiOrigin()}/api/${pathPart}${urlObj.search}`;
 
   const token = readAuthToken(req);
