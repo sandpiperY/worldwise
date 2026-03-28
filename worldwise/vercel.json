@@ -1,14 +1,6 @@
 {
-    "rewrites": [
-      { "source": "/(.*)", "destination": "/index.html" }
-    ],
-    "headers": [
-      {
-        "source": "/(.*)",
-        "headers": [
-          { "key": "X-Content-Type-Options", "value": "nosniff" },
-          { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" }
-        ]
-      }
-    ]
-  }
+  "rewrites": [
+    { "source": "/api/:path*", "destination": "http://118.31.55.213:1337/api/:path*" },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}
