@@ -29,27 +29,49 @@ const initialState = {
 }
 const CityContext = createContext(initialState);
 
+function normalizeCityList(payload: unknown): any[] {
+  if (Array.isArray(payload)) return payload;
+  if (payload && typeof payload === "object" && Array.isArray((payload as { data?: unknown }).data)) {
+    return (payload as { data: any[] }).data;
+  }
+  return [];
+}
+
+function normalizeCityOne(payload: unknown): any {
+  if (payload && typeof payload === "object" && "data" in (payload as object)) {
+    return (payload as { data: any }).data ?? payload;
+  }
+  return payload;
+}
+
 const cityReducer = function reducer(state, action){
   switch(action.type){
     case 'loading':
       return { ...state, isLoading: true, error: null };
-    case 'cities/loaded':
+    case 'cities/loaded': {
+      const list = normalizeCityList(action.payload);
       return {
         ...state,
         isLoading: false,
         error: null,
-        cities: (action.payload).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()),
+        cities: [...list].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()),
       };
+    }
     case 'city/loaded':
-      return { ...state, isLoading: false, error: null, currentCity: action.payload };
-    case 'city/created':
+      return { ...state, isLoading: false, error: null, currentCity: normalizeCityOne(action.payload) };
+    case 'city/created': {
+      const city = normalizeCityOne(action.payload);
+      if (!city) {
+        return { ...state, isLoading: false, error: null };
+      }
       return {
         ...state,
         isLoading: false,
         error: null,
-        cities: [...state.cities, action.payload].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()),
-        currentCity: action.payload,
+        cities: [...state.cities, city].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()),
+        currentCity: city,
       };
+    }
     case 'city/deleted':
       console.log("delete payload", action.payload);
       return {
@@ -102,8 +124,15 @@ function useFetch() {
         });
 
         if (method.toUpperCase() !== "DELETE") {
-          dispatch({ type: `${type}`, payload: res.data });
-          return res.data;
+          if (type === "cities/loaded") {
+            const list = normalizeCityList(
+              res?.data !== undefined ? res : { data: res }
+            );
+            dispatch({ type: "cities/loaded", payload: list });
+          } else {
+            dispatch({ type: `${type}`, payload: res });
+          }
+          return res?.data ?? res;
         }
         console.log(documentId);
         dispatch({ type: `${type}`, payload: { documentId } });
