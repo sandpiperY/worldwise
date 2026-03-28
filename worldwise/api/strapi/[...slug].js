@@ -21,12 +21,18 @@ function slugPath(req) {
 }
 
 /**
- * Strapi 5：请求里若带有效 JWT，会只用 Authenticated 角色的能力，不会与 Public 合并。
- * cities 若仅对 Public 开放、Authenticated 未勾选对应权限，带 Bearer 反而会失败（403/404 等）。
- * 因此与「cities 无需登录」一致时，不向 Strapi 转发 Authorization。
+ * Strapi 5：带有效 JWT 时只用 Authenticated 能力，不与 Public 合并。
+ * cities：常见配置是 Public 只开 find（匿名能列表），create/delete 只给 Authenticated。
+ * 若 cities 一律不传 Bearer，则 GET 能过、写操作会 403。
+ * 因此 cities 仅在 GET/HEAD 省略 Authorization；写请求仍转发 Cookie 里的 JWT。
  */
 function isStrapiCitiesContentPath(pathPart) {
   return pathPart === 'cities' || pathPart.startsWith('cities/');
+}
+
+function omitBearerForCitiesRead(method, pathPart) {
+  const m = (method || 'GET').toUpperCase();
+  return isStrapiCitiesContentPath(pathPart) && (m === 'GET' || m === 'HEAD');
 }
 
 export default async function handler(req, res) {
@@ -49,7 +55,7 @@ export default async function handler(req, res) {
   const headers = new Headers();
   const ct = req.headers['content-type'];
   if (ct) headers.set('content-type', ct);
-  if (token && !isStrapiCitiesContentPath(pathPart)) {
+  if (token && !omitBearerForCitiesRead(req.method, pathPart)) {
     headers.set('authorization', `Bearer ${token}`);
   }
 
