@@ -41,6 +41,7 @@ function isStrapiCitiesContentPath(pathPart) {
 
 export default async function handler(req, res) {
   const pathPart = slugPath(req);
+  console.log(`[BFF] ${req.method} ${req.url} -> pathPart:`, pathPart);
   if (!pathPart) {
     res.status(400).json({
       error: {
@@ -57,9 +58,6 @@ export default async function handler(req, res) {
 
   const token = readAuthToken(req);
   const headers = new Headers();
-  /** 与前端 axios（CityContext：有 payload 则 JSON.stringify({ data })，否则 data 为 null）发出的头一致，原样转发 */
-  const ct = req.headers['content-type'];
-  if (ct) headers.set('content-type', ct);
   if (token && !isStrapiCitiesContentPath(pathPart)) {
     headers.set('authorization', `Bearer ${token}`);
   }
@@ -72,6 +70,16 @@ export default async function handler(req, res) {
         : typeof req.body === 'string'
           ? req.body
           : JSON.stringify(req.body);
+
+  /** 无 body（常见 DELETE）时不要带 Content-Type，避免 Strapi 对 application/json 空体返回 400/404 */
+  if (body !== undefined) {
+    const ct = req.headers['content-type'];
+    if (typeof ct === 'string' && ct.trim()) {
+      headers.set('content-type', ct);
+    } else {
+      headers.set('content-type', 'application/json');
+    }
+  }
 
   let upstream;
   try {
