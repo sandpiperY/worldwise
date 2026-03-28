@@ -15,22 +15,51 @@ function normalizeStrapiUser(data) {
 }
 
 /**
- * Strapi 5 users-permissions：若 Authenticated 未勾选 User → me，路由会 403 Forbidden（非转发写错）。
- * 用与 Strapi 相同的 JWT_SECRET 校验 Cookie 后返回最小 user，避免刷新后会话无法恢复。
- * 需设置 strapi_jwt_secret（或 STRAPI_JWT_SECRET），取值与 Strapi 的 JWT_SECRET 一致。
+ * Strapi 5：Authenticated 未开 User→me 时 /users/me 常 403。
+ * 若 Vercel 已配置 strapi_jwt_secret（与 Strapi 的 JWT_SECRET 一致），任意非 2xx 时可用 Cookie JWT 校验通过则返回 { user: { id } }，避免 /api/session/me 长期 403。
+ * 未配置密钥时请在 Strapi 后台为 Authenticated 勾选 User 的 me，或补上环境变量。
  */
+function getJwtSecret() {
+  return process.env.strapi_jwt_secret || process.env.STRAPI_JWT_SECRET || '';
+}
+
+function userIdFromJwtPayload(decoded) {
+  if (!decoded || typeof decoded !== 'object') return null;
+  const raw = decoded.id ?? decoded.userId ?? decoded.sub;
+  return raw == null ? null : raw;
+}
+
 function userFromVerifiedJwt(token) {
-  const secret = process.env.strapi_jwt_secret || process.env.STRAPI_JWT_SECRET;
+  const secret = getJwtSecret();
   if (!secret || !token) return null;
   try {
     const decoded = jwt.verify(token, secret);
-    if (!decoded || typeof decoded !== 'object') return null;
-    const id = decoded.id;
+    const id = userIdFromJwtPayload(decoded);
     if (id == null) return null;
     return { id };
   } catch {
     return null;
   }
+}
+
+/** Strapi 失败且 JWT 兜底也失败时，区分过期 / 密钥错误 / 未配密钥 */
+function jwt401Hint(token) {
+  const secret = getJwtSecret();
+  if (!secret) {
+    return {
+      code: 'bff_no_jwt_secret',
+      message: 'BFF 未配置 strapi_jwt_secret（或 STRAPI_JWT_SECRET），无法校验 Cookie'
+    };
+  }
+  const dec = jwt.decode(token);
+  if (dec && typeof dec === 'object' && typeof dec.exp === 'number' && Date.now() >= dec.exp * 1000) {
+    return { code: 'jwt_expired', message: '登录已过期，请重新登录' };
+  }
+  return {
+    code: 'jwt_verify_failed',
+    message:
+      'Cookie 中 JWT 与 STRAPI_JWT_SECRET 不匹配或已损坏，请重新登录，并核对 Vercel 与 Strapi 的 JWT_SECRET 完全一致'
+  };
 }
 
 export default async function handler(req, res) {
@@ -40,7 +69,7 @@ export default async function handler(req, res) {
   }
   const token = readAuthToken(req);
   if (!token) {
-    res.status(401).json({ error: { message: '未登录' } });
+    res.status(401).json({ error: { message: '未登录', code: 'no_cookie' } });
     return;
   }
   const origin = strapiOrigin();
@@ -49,12 +78,16 @@ export default async function handler(req, res) {
   });
   const data = await r.json().catch(() => ({}));
   if (!r.ok) {
-    if (r.status === 403) {
-      const fallback = userFromVerifiedJwt(token);
-      if (fallback) {
-        res.status(200).json({ user: fallback });
-        return;
-      }
+    // Strapi 常因 Authenticated 未开 User→me 返回 403；也可能其它非 2xx。有 JWT_SECRET 时用语义校验兜底，避免刷新永远 403。
+    const fallback = userFromVerifiedJwt(token);
+    if (fallback) {
+      res.status(200).json({ user: fallback });
+      return;
+    }
+    if (r.status === 401) {
+      const hint = jwt401Hint(token);
+      res.status(401).json({ error: hint, strapi: data?.error ?? data });
+      return;
     }
     res.status(r.status).json(data);
     return;

@@ -40,9 +40,7 @@ function isStrapiCitiesContentPath(pathPart) {
 }
 
 export default async function handler(req, res) {
-  console.log('🔥 HIT /api/strapi');
   const pathPart = slugPath(req);
-  console.log(`[BFF] ${req.method} ${req.url} -> pathPart:`, pathPart);
   if (!pathPart) {
     res.status(400).json({
       error: {

@@ -47,6 +47,7 @@ export function clearAuthCookie(res, req) {
 
 export function strapiOrigin() {
   let o = String(
+    process.env.strapi_origin ||
       process.env.STRAPI_ORIGIN ||
       'http://118.31.55.213:1337'
   )
