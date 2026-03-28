@@ -45,12 +45,13 @@ export function clearAuthCookie(res, req) {
   );
 }
 
-/**
- * 仅 Strapi 站点根（协议+主机+端口），不要带 /api。
- * BFF 会自行拼接 `/api/...`；若环境变量写成 `https://cms.com/api` 会得到 `/api/api/...`，Content API 会 404。
- */
+/** 优先小写名（部分平台仅允许 env 名含小写/数字/横线/下划线），仍兼容 STRAPI_ORIGIN。 */
 export function strapiOrigin() {
-  let o = String(process.env.STRAPI_ORIGIN || 'http://118.31.55.213:1337')
+  let o = String(
+    process.env.strapi_origin ||
+      process.env.STRAPI_ORIGIN ||
+      'http://118.31.55.213:1337'
+  )
     .trim()
     .replace(/\/+$/, '');
   if (/\/api\/?$/i.test(o)) {

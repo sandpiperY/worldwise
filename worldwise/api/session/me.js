@@ -17,10 +17,10 @@ function normalizeStrapiUser(data) {
 /**
  * Strapi 5 users-permissions：若 Authenticated 未勾选 User → me，路由会 403 Forbidden（非转发写错）。
  * 用与 Strapi 相同的 JWT_SECRET 校验 Cookie 后返回最小 user，避免刷新后会话无法恢复。
- * Vercel 需设置 STRAPI_JWT_SECRET，取值与 Strapi 服务端 JWT_SECRET 一致。
+ * 需设置 strapi_jwt_secret（或 STRAPI_JWT_SECRET），取值与 Strapi 的 JWT_SECRET 一致。
  */
 function userFromVerifiedJwt(token) {
-  const secret = process.env.STRAPI_JWT_SECRET;
+  const secret = process.env.strapi_jwt_secret || process.env.STRAPI_JWT_SECRET;
   if (!secret || !token) return null;
   try {
     const decoded = jwt.verify(token, secret);
