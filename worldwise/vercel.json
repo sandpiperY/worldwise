@@ -1,12 +1,12 @@
 {
-  "routes": [
+  "rewrites": [
     {
-      "src": "/api/strapi/(.*)",
-      "dest": "/api/strapi/[...slug].js"
+      "source": "/api/strapi/(.*)",
+      "destination": "/api/strapi/[...slug]"
     },
     {
-      "src": "/(.*)",
-      "dest": "/index.html"
+      "source": "/((?!api/|assets/|.*\\..*).*)",
+      "destination": "/index.html"
     }
   ]
 }
