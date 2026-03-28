@@ -14,8 +14,20 @@ function secureCookieSuffix(req) {
 export function readAuthToken(req) {
   const raw = req.headers.cookie;
   if (!raw) return null;
-  const m = raw.match(new RegExp(`(?:^|;\\s*)${NAME}=([^;]*)`));
-  return m ? decodeURIComponent(m[1].trim()) : null;
+  const parts = raw.split(';');
+  for (const p of parts) {
+    const i = p.indexOf('=');
+    if (i === -1) continue;
+    const k = p.slice(0, i).trim();
+    if (k !== NAME) continue;
+    const v = p.slice(i + 1).trim();
+    try {
+      return decodeURIComponent(v);
+    } catch {
+      return v;
+    }
+  }
+  return null;
 }
 
 export function setAuthCookie(res, jwt, maxAgeSec, req) {

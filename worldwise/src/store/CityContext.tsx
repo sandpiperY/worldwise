@@ -31,19 +31,39 @@ const initialState = {
 }
 const CityContext = createContext(initialState);
 
-function normalizeCityList(payload: unknown): any[] {
-  if (Array.isArray(payload)) return payload;
-  if (payload && typeof payload === "object" && Array.isArray((payload as { data?: unknown }).data)) {
-    return (payload as { data: any[] }).data;
+function normalizeCityEntry(entry: unknown): any {
+  if (!entry || typeof entry !== "object") return entry;
+  const e = entry as Record<string, unknown>;
+  const attrs =
+    e.attributes && typeof e.attributes === "object"
+      ? (e.attributes as Record<string, unknown>)
+      : null;
+  const merged: Record<string, unknown> = { ...(attrs ?? {}), ...e };
+  if (attrs && attrs.documentId != null && merged.documentId == null) {
+    merged.documentId = attrs.documentId;
   }
-  return [];
+  return merged;
+}
+
+function normalizeCityList(payload: unknown): any[] {
+  let list: unknown[] = [];
+  if (Array.isArray(payload)) list = payload;
+  else if (
+    payload &&
+    typeof payload === "object" &&
+    Array.isArray((payload as { data?: unknown }).data)
+  ) {
+    list = (payload as { data: unknown[] }).data;
+  }
+  return list.map((item) => normalizeCityEntry(item));
 }
 
 function normalizeCityOne(payload: unknown): any {
   if (payload && typeof payload === "object" && "data" in (payload as object)) {
-    return (payload as { data: any }).data ?? payload;
+    const inner = (payload as { data: unknown }).data ?? payload;
+    return normalizeCityEntry(inner);
   }
-  return payload;
+  return normalizeCityEntry(payload);
 }
 
 const cityReducer = function reducer(state, action){

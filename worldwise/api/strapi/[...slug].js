@@ -20,6 +20,15 @@ function slugPath(req) {
   return '';
 }
 
+/**
+ * Strapi 5：请求里若带有效 JWT，会只用 Authenticated 角色的能力，不会与 Public 合并。
+ * cities 若仅对 Public 开放、Authenticated 未勾选对应权限，带 Bearer 反而会失败（403/404 等）。
+ * 因此与「cities 无需登录」一致时，不向 Strapi 转发 Authorization。
+ */
+function isStrapiCitiesContentPath(pathPart) {
+  return pathPart === 'cities' || pathPart.startsWith('cities/');
+}
+
 export default async function handler(req, res) {
   const pathPart = slugPath(req);
   const host = req.headers.host || 'localhost';
@@ -31,7 +40,9 @@ export default async function handler(req, res) {
   const headers = new Headers();
   const ct = req.headers['content-type'];
   if (ct) headers.set('content-type', ct);
-  if (token) headers.set('authorization', `Bearer ${token}`);
+  if (token && !isStrapiCitiesContentPath(pathPart)) {
+    headers.set('authorization', `Bearer ${token}`);
+  }
 
   const body =
     req.method === 'GET' || req.method === 'HEAD'
