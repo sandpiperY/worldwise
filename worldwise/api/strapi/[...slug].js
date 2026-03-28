@@ -31,6 +31,15 @@ function isStrapiCitiesContentPath(pathPart) {
 
 export default async function handler(req, res) {
   const pathPart = slugPath(req);
+  if (!pathPart) {
+    res.status(400).json({
+      error: {
+        message:
+          'Strapi 代理路径为空。请确认请求为 /api/strapi/<资源路径>，且 Vercel 未错误改写 URL。'
+      }
+    });
+    return;
+  }
   const host = req.headers.host || 'localhost';
   const proto = req.headers['x-forwarded-proto'] || 'http';
   const urlObj = new URL(req.url, `${proto}://${host}`);
