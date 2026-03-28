@@ -1,11 +1,12 @@
 import styles from './From.module.css'
 import Button from '../Button/Button'
 import { useNavigate } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import useUrlPosition from '../../hooks/useUrlPosition';
 import Message from '../Message/Message';
 import ReactCountryFlag from "react-country-flag";
 import { useCity } from '../../store/CityContext';
+import { FLAG_ICONS_CDN } from '../../config/flagIconsCdn.js';
 
 const GEO_BASE_URL =  `https://api.bigdatacloud.net/data/reverse-geocode-client?`;
 
@@ -28,6 +29,8 @@ function Form() {
 
   const [isLoadingGeolocation, setIsLoadingGeolocation] = useState(false);
   const [geolocationError, setGeolocationError] = useState(null);
+  const submitLockRef = useRef(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(()=>{
     async function getCityName(){
@@ -50,11 +53,13 @@ function Form() {
             if (data.countryCode) {
               setEmoji(convertToEmoji(data.countryCode));
             } else {
-              setEmoji("🏳️");
+              /* 勿存 🏳️：ReactCountryFlag(svg) 需要两位 ISO，否则会拼出错误 URL */
+              setEmoji('');
             }
         }
         catch(error){
             console.error(error);
+            navigate('/app/cities', { replace: true });
             setGeolocationError(error.message);
         }
         finally{
@@ -66,10 +71,11 @@ function Form() {
 
   if(geolocationError) return <Message message={geolocationError}/>
 
-  async function handleAdd(e){
+  async function handleAdd(e) {
     e.preventDefault();
-    if(!cityName || !date){
-        return alert('请设置位置和日期');
+    if (submitLockRef.current || isLoadingCreateCity || isSubmitting) return;
+    if (!cityName || !date) {
+      return alert('请设置位置和日期');
     }
     const newCity = {
       cityName,
@@ -80,14 +86,34 @@ function Form() {
       position: {
         lat: urlLat,
         lng: urlLng,
+      },
+    };
+    submitLockRef.current = true;
+    setIsSubmitting(true);
+    try {
+      const created = await createCity(newCity);
+      const cityKey =
+        created?.documentId != null && created.documentId !== ""
+          ? created.documentId
+          : created?.id;
+      if (cityKey != null && cityKey !== "") {
+        navigate(
+          `/app/cities/${cityKey}?lat=${urlLat}&lng=${urlLng}`,
+          { replace: true }
+        );
+      } else {
+        throw new Error("Failed to create city");
       }
+    } catch {
+      navigate(`/app/cities`, { replace: true });
+    } finally {
+      submitLockRef.current = false;
+      setIsSubmitting(false);
     }
-    createCity(newCity);
-    navigate(`/app/cities`, {replace: true});
   }
 
   return (
-    <form className={`${styles.form} ${(isLoadingGeolocation || isLoadingCreateCity) ? styles.loading : ''}`} onSubmit={handleAdd}>
+    <form className={`${styles.form} ${(isLoadingGeolocation || isLoadingCreateCity || isSubmitting) ? styles.loading : ''}`} onSubmit={handleAdd}>
         <div className={styles.row}>
             <label htmlFor="cityName">City name</label>
             <input id="cityName" type="text" 
@@ -95,7 +121,15 @@ function Form() {
                 onChange={(e) => setCityName(e.target.value)}
             />
             <span className={styles.flag}>
-                <ReactCountryFlag countryCode={emoji} svg/>
+                {/^[A-Za-z]{2}$/.test(emoji) ? (
+                  <ReactCountryFlag
+                    countryCode={emoji}
+                    svg
+                    cdnUrl={FLAG_ICONS_CDN}
+                  />
+                ) : (
+                  <span role="img" aria-label="flag">🏳️</span>
+                )}
             </span>
         </div>
         <div className={styles.row}>
@@ -113,11 +147,23 @@ function Form() {
             />
         </div>
         <div className={styles.buttons}>
-            <Button type="primary">添加</Button>
-            <Button type="back" onClick={(e) => {
+            <Button
+              type="primary"
+              disabled={isLoadingGeolocation || isLoadingCreateCity || isSubmitting}
+            >
+              添加
+            </Button>
+            <Button
+              type="back"
+              htmlType="button"
+              disabled={isLoadingCreateCity || isSubmitting}
+              onClick={(e) => {
                 e.preventDefault();
                 navigate('/app/cities');
-            }}>返回</Button>
+              }}
+            >
+              返回
+            </Button>
         </div>
     </form>
   )

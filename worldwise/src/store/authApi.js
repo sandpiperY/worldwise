@@ -1,8 +1,9 @@
 import {createApi, fetchBaseQuery} from '@reduxjs/toolkit/query/react'
+import { getStrapiApiBase } from '../config/strapiBase.js'
 
 const authApi = createApi({
     reducerPath: 'authApi',
-    baseQuery: fetchBaseQuery({baseUrl: 'http://localhost:1337/api'}),
+    baseQuery: fetchBaseQuery({ baseUrl: getStrapiApiBase() }),
     endpoints(build){
         return {
             register: build.mutation({

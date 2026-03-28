@@ -1,6 +1,7 @@
 import styles from "./City.module.css";
 import BackButton from "../../../Button/BackButton.jsx";
 import ReactCountryFlag from "react-country-flag";
+import { FLAG_ICONS_CDN } from "../../../../config/flagIconsCdn.js";
 import { useParams} from "react-router-dom";
 import { useCity } from "../../../../store/CityContext";
 import { useEffect } from "react";
@@ -34,6 +35,7 @@ function City() {
                         <ReactCountryFlag
                         countryCode={emoji}
                         svg
+                        cdnUrl={FLAG_ICONS_CDN}
                         title={cityName}
                         />
                     </span> {cityName}

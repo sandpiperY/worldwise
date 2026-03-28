@@ -1,4 +1,5 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, AxiosError, InternalAxiosRequestConfig } from 'axios';
+import { getStrapiApiBase } from './strapiBase.js';
 
 // 扩展 Axios 默认请求配置
 type RequestConfig<T = any> = AxiosRequestConfig & {
@@ -100,11 +101,16 @@ class Request {
 
   // 网络错误处理
   private handleNetworkError(originalRequest: RequestConfig) {
-    if (originalRequest.retry ?? 0 < this.retryLimit) {
-      const delay = 1000 * Math.pow(2, originalRequest.retry || 0); // 指数退避
-      originalRequest.retry = (originalRequest.retry || 0) + 1;
-      
-      return new Promise(resolve => 
+    const method = (originalRequest.method || 'get').toUpperCase();
+    if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
+      return Promise.reject(new Error('Network Error'));
+    }
+
+    const retryCount = originalRequest.retry ?? 0;
+    if (retryCount < this.retryLimit) {
+      const delay = 1000 * Math.pow(2, retryCount);
+      originalRequest.retry = retryCount + 1;
+      return new Promise((resolve) =>
         setTimeout(() => resolve(this.instance(originalRequest)), delay)
       );
     }
@@ -136,7 +142,7 @@ class Request {
 async function refreshToken(): Promise<string> {
     try {
       // 假设你的刷新 token API 是 /auth/refresh
-      const res = await axios.post<{ token: string }>('http://localhost:1337/api/auth/refresh', {
+      const res = await axios.post<{ token: string }>(`${getStrapiApiBase()}/auth/refresh`, {
         // 可带上旧 token
         token: localStorage.getItem('token')
       });
@@ -151,6 +157,4 @@ function showError(msg: string) {
     alert(msg);
 }
   
-export const request = new Request(
-'http://localhost:1337/api'
-)
+export const request = new Request(getStrapiApiBase());

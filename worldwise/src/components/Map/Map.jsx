@@ -189,7 +189,8 @@ function Map() {
 
       // 点击标记跳转到城市详情
       marker.on('click', () => {
-        navigate(`/app/cities/${city.id}?lat=${city.position.lat}&lng=${city.position.lng}`);
+        const cityKey = city.documentId ?? city.id;
+        navigate(`/app/cities/${cityKey}?lat=${city.position.lat}&lng=${city.position.lng}`);
       });
 
       // 鼠标悬停显示信息窗口

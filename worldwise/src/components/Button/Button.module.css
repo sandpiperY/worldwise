@@ -9,6 +9,11 @@
     cursor: pointer;
 }
 
+.btn:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
 .primary {
     font-weight: 700;
     background-color: var(--color-brand--2);

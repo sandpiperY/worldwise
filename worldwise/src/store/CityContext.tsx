@@ -14,7 +14,7 @@ interface CityContextType {
   isLoading: boolean;
   error: string | null;
   getCity: (documentId: string) => Promise<void>;
-  createCity: (city: any) => Promise<void>;
+  createCity: (city: any) => Promise<any>;
   deleteCity: (documentId: string) => Promise<void>;
 }
 
@@ -24,7 +24,7 @@ const initialState = {
   currentCity: {},
   error: null,
   getCity: async (documentId: string) => {},
-  createCity: async (city: any) => {},
+  createCity: async (_city: any) => ({} as any),
   deleteCity: async (documentId: string) => {}
 }
 const CityContext = createContext(initialState);
@@ -88,7 +88,7 @@ function useFetch() {
       method?: "GET" | "POST" | "PUT" | "DELETE";
       body?: any;
       skipErrorHandler?: boolean;
-    }) => {
+    }): Promise<any> => {
       body = body ? JSON.stringify({ data: body }) : null;
       console.log("body", body);
       try {
@@ -103,16 +103,17 @@ function useFetch() {
 
         if (method.toUpperCase() !== "DELETE") {
           dispatch({ type: `${type}`, payload: res.data });
-        } else {
-          console.log(documentId);
-          dispatch({ type: `${type}`, payload: { documentId } });
+          return res.data;
         }
+        dispatch({ type: `${type}`, payload: { documentId } });
+        return { documentId };
       } catch (e: any) {
         console.error(e);
         dispatch({
           type: "rejected",
           payload: e.message || "Failed to fetch data",
         });
+        throw e;
       }
     },
     []
@@ -128,7 +129,7 @@ function CityProvider({ children }: { children: React.ReactNode }) {
   const { cities, currentCity, isLoading, error, fetchData } = useFetch();
 
   useEffect(() => {
-    fetchData({ url: "/cities", type: "cities/loaded" });
+    void fetchData({ url: "/cities", type: "cities/loaded" }).catch(() => {});
   }, [fetchData]);
 
   const getCity = useCallback(
@@ -141,16 +142,14 @@ function CityProvider({ children }: { children: React.ReactNode }) {
     [fetchData]
   );
 
-  const createCity = useCallback(
-    (city: any) =>
-      fetchData({
-        url: "/cities",
-        type: "city/created",
-        method: "POST",
-        body: city,
-      }),
-    [fetchData]
-  );
+  const createCity = useCallback((city: any) => {
+    return fetchData({
+      url: "/cities",
+      type: "city/created",
+      method: "POST",
+      body: city,
+    });
+  }, [fetchData]);
 
   const deleteCity = useCallback(
     (documentId: string) =>

@@ -1,5 +1,6 @@
 import {Link} from "react-router-dom"
 import ReactCountryFlag from "react-country-flag";
+import { FLAG_ICONS_CDN } from "../../../config/flagIconsCdn.js";
 import styles from "./CityItem.module.css";
 import { useCity } from "../../../store/CityContext";
 import { useNavigate } from "react-router-dom";
@@ -20,8 +21,9 @@ function CityItem({city}) {
     e.preventDefault();
     e.stopPropagation();
     if(window.confirm('Are you sure you want to delete this city?')) {
-      deleteCity(documentId);
-      navigate(`/app/cities`);
+      void deleteCity(documentId)
+        .then(() => navigate(`/app/cities`))
+        .catch(() => {});
     }
   }
   return (
@@ -32,6 +34,7 @@ function CityItem({city}) {
                 <ReactCountryFlag
                 countryCode={emoji}
                 svg
+                cdnUrl={FLAG_ICONS_CDN}
                 style={{
                     width: '2.6rem',
                     height: '2.6rem',

@@ -3,7 +3,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import PageNav from '../components/PageNav';
 import styles from './AIAssistant.module.css';
-import { AI_CHAT_CONFIG } from '../config/aichat';
+import { getStrapiApiBase } from '../config/strapiBase.js';
 
 
 function getAssistantText(payload) {
@@ -187,7 +187,7 @@ function AIAssistant() {
     setIsStreaming(true);
 
     try {
-      const res = await fetch(AI_CHAT_CONFIG.API_URL, {
+      const res = await fetch(`${getStrapiApiBase()}/ai-chat/stream`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

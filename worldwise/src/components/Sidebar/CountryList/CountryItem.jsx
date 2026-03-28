@@ -1,5 +1,6 @@
 import styles from './CountryItem.module.css'
 import ReactCountryFlag from "react-country-flag";
+import { FLAG_ICONS_CDN } from "../../../config/flagIconsCdn.js";
 
 function CountryItem({ country }) {
     // console.log(country);
@@ -9,6 +10,7 @@ function CountryItem({ country }) {
             <ReactCountryFlag
               countryCode={country.emoji}
               svg
+              cdnUrl={FLAG_ICONS_CDN}
               style={{
                 width: '2.6rem',
                 height: '2.6rem',

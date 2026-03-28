@@ -8,7 +8,7 @@ function formatConnectionError(message) {
   if (!message) return "";
   const m = String(message);
   if (m === "Network Error" || /network/i.test(m) || /ERR_CONNECTION|ECONNREFUSED|Failed to fetch/i.test(m)) {
-    return "无连接：请确认 Strapi 后端已启动（默认 http://localhost:1337）";
+    return "无连接：请确认 Strapi 已启动，且前端 .env 中 VITE_STRAPI_URL 指向正确地址";
   }
   return m;
 }
