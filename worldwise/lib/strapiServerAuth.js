@@ -12,8 +12,6 @@ function secureCookieSuffix(req) {
 }
 
 export function readAuthToken(req) {
-  console.log('🔥 Cookie header:', req.headers.cookie);
-  console.log('🔥 JWT read from cookie:', readAuthToken(req));
   const raw = req.headers.cookie;
   if (!raw) return null;
   const parts = raw.split(';');

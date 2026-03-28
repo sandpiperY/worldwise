@@ -8,11 +8,17 @@ export default async function handler(req, res) {
     return;
   }
   const origin = strapiOrigin();
-  const r = await fetch(`${origin}/api/auth/local/register`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(req.body || {})
-  });
+  let r;
+  try {
+    r = await fetch(`${origin}/api/auth/local/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(req.body || {})
+    });
+  } catch {
+    res.status(502).json({ error: { message: '无法连接 Strapi，请检查 strapi_origin 与网络' } });
+    return;
+  }
   const data = await r.json().catch(() => ({}));
   if (!r.ok) {
     res.status(r.status).json(data);
