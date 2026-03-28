@@ -102,29 +102,22 @@ class Request {
     return Promise.reject(new Error('Network Error'));
   }
 
-  private handleServerError(error: AxiosError, config: RequestConfig) {
+  private handleServerError(error: AxiosError, _config: RequestConfig) {
     const status = error.response?.status;
     const data = error.response?.data;
     const strapiMsg = pickStrapiMessage(data);
-    switch (status) {
-      case 500:
-        showError(strapiMsg || '服务器内部错误');
-        break;
-      case 403:
-        showError(strapiMsg || '无访问权限');
-        break;
-      default:
-        showError(strapiMsg || (data as ResponseData)?.message || error.message || '未知错误');
-    }
+    const fallback =
+      status === 500
+        ? strapiMsg || '服务器内部错误'
+        : status === 403
+          ? strapiMsg || '无访问权限'
+          : strapiMsg || (data as ResponseData)?.message || error.message || '未知错误';
+    console.log('[request]', status, fallback);
     return Promise.reject({
       code: status || -1,
       message: strapiMsg || (data as ResponseData)?.message || error.message || '请求失败'
     });
   }
-}
-
-function showError(msg: string) {
-  alert(msg);
 }
 
 export const request = new Request(getStrapiApiBase());
