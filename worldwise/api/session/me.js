@@ -20,26 +20,58 @@ function normalizeStrapiUser(data) {
  * 未配置密钥时请在 Strapi 后台为 Authenticated 勾选 User 的 me，或补上环境变量。
  */
 function getJwtSecret() {
-  return process.env.strapi_jwt_secret || process.env.STRAPI_JWT_SECRET || '';
+  let s =
+    process.env.strapi_jwt_secret ||
+    process.env.STRAPI_JWT_SECRET ||
+    '';
+  s = String(s).trim();
+  if (
+    (s.startsWith('"') && s.endsWith('"')) ||
+    (s.startsWith("'") && s.endsWith("'"))
+  ) {
+    s = s.slice(1, -1).trim();
+  }
+  return s;
 }
 
 function userIdFromJwtPayload(decoded) {
   if (!decoded || typeof decoded !== 'object') return null;
-  const raw = decoded.id ?? decoded.userId ?? decoded.sub;
+  let raw = decoded.id ?? decoded.userId;
+  if (raw == null && decoded.sub != null) {
+    const sub = decoded.sub;
+    raw = typeof sub === 'string' && /^\d+$/.test(sub) ? Number(sub) : sub;
+  }
   return raw == null ? null : raw;
+}
+
+/** Strapi 默认 HS256，部分配置为 HS512；与 clockTolerance 一并尝试，避免与 Strapi 侧不一致 */
+function verifyStrapiJwtPayload(token, secret) {
+  const t = String(token).replace(/^\s+|\s+$/g, '');
+  const s = String(secret);
+  if (!t || !s) return null;
+  const opts = { clockTolerance: 120 };
+  for (const alg of ['HS256', 'HS512']) {
+    try {
+      return jwt.verify(t, s, { ...opts, algorithms: [alg] });
+    } catch {
+      /* next */
+    }
+  }
+  try {
+    return jwt.verify(t, s, opts);
+  } catch {
+    return null;
+  }
 }
 
 function userFromVerifiedJwt(token) {
   const secret = getJwtSecret();
   if (!secret || !token) return null;
-  try {
-    const decoded = jwt.verify(token, secret);
-    const id = userIdFromJwtPayload(decoded);
-    if (id == null) return null;
-    return { id };
-  } catch {
-    return null;
-  }
+  const decoded = verifyStrapiJwtPayload(token, secret);
+  if (!decoded || typeof decoded !== 'object') return null;
+  const id = userIdFromJwtPayload(decoded);
+  if (id == null) return null;
+  return { id };
 }
 
 /** Strapi 失败且 JWT 兜底也失败时，区分过期 / 密钥错误 / 未配密钥 */
@@ -51,7 +83,7 @@ function jwt401Hint(token) {
       message: 'BFF 未配置 strapi_jwt_secret（或 STRAPI_JWT_SECRET），无法校验 Cookie'
     };
   }
-  const dec = jwt.decode(token);
+  const dec = jwt.decode(String(token).trim());
   if (dec && typeof dec === 'object' && typeof dec.exp === 'number' && Date.now() >= dec.exp * 1000) {
     return { code: 'jwt_expired', message: '登录已过期，请重新登录' };
   }
@@ -67,7 +99,7 @@ export default async function handler(req, res) {
     res.status(405).end();
     return;
   }
-  const token = readAuthToken(req);
+  const token = readAuthToken(req)?.trim();
   if (!token) {
     res.status(401).json({ error: { message: '未登录', code: 'no_cookie' } });
     return;
